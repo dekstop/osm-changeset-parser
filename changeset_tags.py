@@ -89,6 +89,6 @@ if __name__ == "__main__":
     
     print "Processed %d changesets total, %d had tags." % (num_total_changesets, num_changesets)    
 
-    close(fi)
-    close(fo)
-    close(ft)
+    fi.close()
+    fo.close()
+    ft.close()
