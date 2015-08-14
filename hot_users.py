@@ -7,6 +7,7 @@
 import argparse
 import os, errno
 import re
+import urllib
 
 from collections import defaultdict
 from lxml import etree
@@ -24,10 +25,16 @@ def mkdir_p(path):
       pass
     else: raise
 
-re_hot_project = re.compile('#hotosm[^ /#,+;.:]+-([0-9]+)')
+re_hot_project = re.compile('#hotosm[^ /#,+;.:%]+-([0-9]+)')
 
 def get_project_id(tag_value):
-    match = re_hot_project.search(tag_value)
+    try:
+        # unescape URL-encoded strings -- some editors send these.
+        v = urllib.unquote_plus(tag_value) 
+    except:
+        print "Not a valid URL encoding: %s" % tag_value
+        v = tag_value
+    match = re_hot_project.search(v)
     if match:
         return int(match.group(1))
     return None
