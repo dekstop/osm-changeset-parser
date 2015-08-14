@@ -25,9 +25,9 @@ def mkdir_p(path):
       pass
     else: raise
 
-re_hot_project = re.compile('#hotosm[^ /#,+;.:%]+-([0-9]+)')
+re_hot_project = re.compile('(#hotosm[^ /#,+;.:%]+-([0-9]+))')
 
-def get_project_id(tag_value):
+def get_project_tag_id(tag_value):
     try:
         # unescape URL-encoded strings -- some editors send these.
         v = urllib.unquote_plus(tag_value) 
@@ -36,8 +36,8 @@ def get_project_id(tag_value):
         v = tag_value
     match = re_hot_project.search(v)
     if match:
-        return int(match.group(1))
-    return None
+        return match.group(1), int(match.group(2))
+    return None, None
 
 if __name__ == "__main__":
 
@@ -57,6 +57,7 @@ if __name__ == "__main__":
 
     fi = open(args.infile, 'r')
     fo = open(outfile, 'w')
+    fo.write("tag\thot_project\tuid\tusername\n")
     
     context = etree.iterparse(fi, events=('start',))
     
@@ -74,11 +75,11 @@ if __name__ == "__main__":
                 print "%d changesets" % (num_changesets)
         elif elem.tag=='tag' and uid!=None:
             if elem.attrib.get('k')=='comment':
-                project = get_project_id(elem.attrib.get('v'))
+                tag, project = get_project_tag_id(elem.attrib.get('v'))
                 if project:
                     projects_users[project][uid] += 1
                     if projects_users[project][uid]==1:
-                        fo.write("%d\t%s\t%s\n" % (project, uid, username))
+                        fo.write("%s\t%d\t%s\t%s\n" % (tag, project, uid, username))
                         num_entries += 1
       
         # cleanup current element, and all previous siblings
