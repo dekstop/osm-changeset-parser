@@ -25,7 +25,7 @@ def mkdir_p(path):
       pass
     else: raise
 
-re_hot_project = re.compile('(#hotosm[^ /#,+;.:%]+-([0-9]+))')
+re_hot_project = re.compile('(#hotosm[^ /#,+;.:%\d]+-([0-9]+))')
 
 def get_project_tag_id(tag_value):
     try:
