@@ -31,8 +31,8 @@ def get_project_tag_id(tag_value):
     try:
         # unescape URL-encoded strings -- some editors send these.
         v = urllib.unquote_plus(tag_value) 
-    except:
-        print "Not a valid URL encoding: %s" % tag_value
+    except Exception, e:
+        print e, "Not a valid URL encoding: %s" % tag_value
         v = tag_value
     match = re_hot_project.search(v)
     if match:
@@ -71,16 +71,21 @@ if __name__ == "__main__":
             username = strip(elem.attrib.get('user')) or ''
             
             num_changesets += 1
-            if num_changesets % 5000000 == 0:
-                print "%d changesets" % (num_changesets)
+            if num_changesets % 500000 == 0:
+                print "%d project-user pairings in %d changesets" % (num_entries, num_changesets)
         elif elem.tag=='tag' and uid!=None:
             if elem.attrib.get('k')=='comment':
-                tag, project = get_project_tag_id(elem.attrib.get('v'))
+                comment = strip(elem.attrib.get('v'))
+                tag, project = get_project_tag_id(comment)
                 if project:
                     projects_users[project][uid] += 1
                     if projects_users[project][uid]==1:
-                        fo.write("%s\t%d\t%s\t%s\n" % (tag, project, uid, username))
-                        num_entries += 1
+                        try:
+                            fo.write("%s\t%d\t%s\t%s\n" % (tag, project, uid, username))
+                            num_entries += 1
+                        except Exception, e:
+                            print e, username, elem.attrib.get('v')
+                            raise e
       
         # cleanup current element, and all previous siblings
         elem.clear()
